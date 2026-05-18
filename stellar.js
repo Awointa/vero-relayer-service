@@ -3,3 +3,4 @@ module.exports = {};
 // Transaction compiler skeleton
 // Retry pipeline initialization
 // Gas adjustment strategy
+// Dynamic RPC endpoint switching logic
