@@ -5,11 +5,23 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - stellar
+      - redis
 
   stellar:
     image: stellar/quickstart:latest
     ports:
       - "8000:8000"
     command: --standalone --enable-soroban-rpc
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me}
+    command: ["sh", "-c", "redis-server --requirepass \"$${REDIS_PASSWORD}\""]

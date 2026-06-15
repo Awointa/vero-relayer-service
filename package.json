@@ -2,14 +2,19 @@
   "name": "vero-relayer-service",
   "version": "1.0.0",
   "license": "MIT",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "simulate": "node scripts/mock-webhook.js"
+    "worker:events": "node src/workers/event-worker.js",
+    "simulate": "node scripts/mock-webhook.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "12.3.0",
+    "bullmq": "^5.78.1",
     "dotenv": "16.4.5",
     "express": "4.19.2"
   },
