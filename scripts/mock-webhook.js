@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const { logger } = require('../src/logger');
 
 const endpoint = process.env.WEBHOOK_URL || 'http://localhost:3000/github-webhook';
 const count = Number(process.env.COUNT || process.argv[2] || 1);
@@ -44,9 +43,9 @@ async function sendWebhook(index) {
 Promise.all(Array.from({ length: count }, (_, index) => sendWebhook(index)))
   .then(results => {
     const accepted = results.filter(result => result.status === 202).length;
-    logger.info({ count, accepted }, 'mock webhooks sent');
+    console.log(`[mock] Sent ${count} webhook(s). Accepted: ${accepted}.`);
     if (count === 1) {
-      logger.info({ response: results[0].data }, 'mock webhook response');
+      console.log('[mock] Response:', results[0].data);
     }
   })
-  .catch(err => logger.error({ err }, 'mock webhook failed'));
+  .catch(err => console.error('[mock] Error:', err.message));

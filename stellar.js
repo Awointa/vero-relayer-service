@@ -12,7 +12,6 @@ function getServer() {
   return new StellarSdk.Horizon.Server(serverUrl);
 }
 
-const { logger } = require('./src/logger');
 const { estimateStellarFee } = require('./src/services/fee-engine');
 
 async function submitTransaction(transaction) {
@@ -25,27 +24,6 @@ async function registerTaskOnChain(githubId, options = {}) {
   const { STELLAR_SECRET_KEY, STELLAR_NETWORK } = process.env;
   const estimateFee = options.estimateFee || estimateStellarFee;
   const submit = options.submitTransaction || submitTransaction;
-  const log = options.logger || logger;
-
-  log.info({
-    network: STELLAR_NETWORK || 'testnet',
-    hasSigningKey: Boolean(STELLAR_SECRET_KEY)
-  }, 'stellar configuration loaded');
-
-  const fee = await estimateFee();
-
-  log.info({ pr: githubId, fee }, 'building stellar transaction');
-
-  const result = await submit({
-    githubId,
-    fee,
-    operation: 'manageData',
-    key: `vero:pr:${githubId}`,
-    value: 'registered'
-  });
-
-  log.info({ pr: githubId, hash: result.hash }, 'stellar transaction submitted');
-  log.info({ pr: githubId }, 'pull request registered on-chain');
 async function registerTaskOnChain(githubId) {
   const secretKey = process.env.STELLAR_SECRET_KEY;
   if (!secretKey) {
@@ -79,6 +57,21 @@ async function registerTaskOnChain(githubId) {
 
   const result = await broadcastTransaction(server, transaction);
 
+  const fee = await estimateFee();
+
+  console.log(`[stellar] Compiling transaction for GitHub PR #${githubId}...`);
+  console.log(`[stellar] Transaction envelope built: { op: "manageData", key: "vero:pr:${githubId}", value: "registered", fee: "${fee}" }`);
+
+  const result = await submit({
+    githubId,
+    fee,
+    operation: 'manageData',
+    key: `vero:pr:${githubId}`,
+    value: 'registered'
+  });
+
+  console.log(`[stellar] Transaction submitted (simulated). Hash: ${result.hash}`);
+  console.log(`[stellar] PR #${githubId} successfully registered on-chain.`);
   console.log(`[stellar] PR #${githubId} successfully registered on-chain. Hash: ${result.hash}`);
   return result;
 }

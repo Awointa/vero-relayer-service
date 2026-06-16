@@ -1,5 +1,4 @@
 const express = require('express');
-const { logger, requestLoggerMiddleware } = require('./src/logger');
 const {
   buildGitHubPullRequestEventPayload,
   buildMetadataFromRequest,
@@ -9,13 +8,8 @@ const {
 
 function createApp(options = {}) {
   const enqueueEventJob = options.enqueueEventJob || enqueueEvent;
-  const appLogger = options.logger || logger;
   const app = express();
 
-  app.use(requestLoggerMiddleware({
-    logger: appLogger,
-    enabled: options.enableHttpRequestLogs
-  }));
   app.use(express.json());
 const { registerTaskOnChain } = require('./stellar');
 const { verifySignature } = require('./src/middleware/auth');
@@ -46,18 +40,10 @@ app.post('/github-webhook', verifySignature, async (req, res) => {
 
     try {
       const job = await enqueueEventJob(eventPayload);
-      req.log.info({
-        pr: pr.number,
-        eventType: eventPayload.eventType,
-        jobId: job.id
-      }, 'webhook event queued');
+      console.log(`[webhook] queued PR #${pr.number} eventType=${eventPayload.eventType} job=${job.id}`);
       return res.status(202).json({ ok: true, pr: pr.number, queued: true, jobId: job.id });
     } catch (error) {
-      req.log.error({
-        err: error,
-        pr: pr.number,
-        eventType: eventPayload.eventType
-      }, 'failed to enqueue webhook event');
+      console.error(`[webhook] failed to enqueue PR #${pr.number}: ${error.message}`);
       return res.status(500).json({ ok: false, error: 'failed to enqueue event' });
     }
   });
@@ -71,7 +57,7 @@ function startServer() {
   const port = process.env.PORT || 3000;
   const app = createApp();
 
-  return app.listen(port, () => logger.info({ port }, 'server listening'));
+  return app.listen(port, () => console.log(`Server listening on port ${port}`));
 }
 
 if (require.main === module) {
@@ -104,3 +90,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+

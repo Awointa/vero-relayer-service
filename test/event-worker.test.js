@@ -3,16 +3,6 @@ const { test } = require('node:test');
 const { buildGitHubPullRequestEventPayload } = require('../src/queue');
 const { processEventJob } = require('../src/workers/event-worker');
 
-const silentLogger = {
-  info: () => {},
-  error: () => {},
-  warn: () => {},
-  debug: () => {},
-  child() {
-    return this;
-  }
-};
-
 function job(data) {
   return {
     id: 'job-1',
@@ -36,7 +26,6 @@ test('processEventJob calls the existing transaction broadcasting logic', async 
   }, { deliveryId: 'delivery-worker' });
 
   const result = await processEventJob(job(payload), {
-    logger: silentLogger,
     registerTaskOnChain: async pullRequestNumber => {
       calls.push(pullRequestNumber);
     }
@@ -57,7 +46,6 @@ test('processEventJob rejects invalid jobs without calling broadcaster', async (
 
   await assert.rejects(
     () => processEventJob(job(invalidPayload), {
-      logger: silentLogger,
       registerTaskOnChain: async pullRequestNumber => {
         calls.push(pullRequestNumber);
       }

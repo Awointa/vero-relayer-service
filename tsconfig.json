@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/services/fee-engine.ts", "src/logger.ts"]
+  "include": ["src/services/fee-engine.ts"]
 }
